@@ -1,0 +1,11 @@
+﻿@import "tailwindcss";
+
+@source "../../Views/**/*.cshtml";
+@source "../../Pages/**/*.cshtml";
+
+@theme {
+    --color-rich-black: #101820;
+    --color-vivid-yellow: #FEE715;
+    --color-brand-gray: #1e1e1e;
+    --color-brand-blue: #2f60d4;
+}

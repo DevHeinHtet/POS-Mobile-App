@@ -1,0 +1,107 @@
+﻿@model POSMobileApp.ViewModels.Carts.CartSummaryVM
+@{
+    var cart = Model ?? new POSMobileApp.ViewModels.Carts.CartSummaryVM();
+}
+
+@if (cart.Items.Count == 0)
+{
+    <div class="text-center py-16 flex flex-col items-center justify-center space-y-3">
+        <div class="w-14 h-14 rounded-2xl bg-neutral-900/50 border border-neutral-800 flex items-center justify-center text-neutral-600 shadow-inner">
+            <span class="material-symbols-outlined text-2xl">receipt_long</span>
+        </div>
+        <div class="space-y-1">
+            <p class="text-xs font-semibold text-neutral-400 tracking-wide">No Active Items</p>
+            <p class="text-[11px] text-neutral-500 max-w-[180px] mx-auto leading-relaxed">Tap products from the menu grid to configure an order.</p>
+        </div>
+    </div>
+}
+else
+{
+    <!-- CARDS WRAPPER GRID -->
+    <div class="space-y-2 max-h-[54vh] overflow-y-auto pr-1 no-scrollbar">
+        @foreach (var item in cart.Items)
+        {
+            <div class="bg-gradient-to-r from-[#242427]/60 to-[#1c1c1e]/40 border border-neutral-800/80 rounded-xl p-3 flex justify-between items-center gap-3 shadow-md hover:border-neutral-700/50 transition-all duration-150 dynamic-cart-row group"
+                 data-product-id="@item.ProductId"
+                 data-unit-id="@item.UnitId">
+
+                <!-- LEFT SIDE: Product Info & Quantity Adjuster -->
+                <div class="flex-1 min-w-0 space-y-2.5">
+                    <div>
+                        <!-- Title & Unit Tag -->
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h4 class="text-[13px] font-bold text-neutral-100 line-clamp-1 leading-snug tracking-wide group-hover:text-amber-400 transition-colors">
+                                @item.ProductName
+                            </h4>
+                            <span class="text-[9px] font-mono tracking-wider font-extrabold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-md uppercase shrink-0">
+                                @item.UnitName
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Ergonomic Stepper (Left Aligned) -->
+                    <div class="flex items-center bg-neutral-950 border border-neutral-800 rounded-lg p-0.5 shadow-inner w-fit">
+                        <!-- Minus Button -->
+                        <button type="button" onclick="adjustQty('@item.ProductId', '@item.UnitId', @item.UnitPrice, @(item.Quantity - 1))"
+                                class="text-sm font-black text-neutral-400 hover:text-white hover:bg-neutral-800 w-6 h-6 rounded-md flex items-center justify-center transition-all select-none active:scale-90">
+                            −
+                        </button>
+                        <span class="text-xs font-mono font-black text-neutral-100 w-7 text-center select-none">
+                            @item.Quantity
+                        </span>
+                        <!-- Plus Button -->
+                        <button type="button" onclick="adjustQty('@item.ProductId', '@item.UnitId', @item.UnitPrice, @(item.Quantity + 1))"
+                                class="text-sm font-black text-neutral-400 hover:text-white hover:bg-neutral-800 w-6 h-6 rounded-md flex items-center justify-center transition-all select-none active:scale-90">
+                            +
+                        </button>
+                    </div>
+                </div>
+
+                <!-- RIGHT SIDE: Price Total & Action Controls -->
+                <div class="flex flex-col items-end justify-between shrink-0 self-stretch my-0.5">
+                    <!-- Clean Total Presentation -->
+                    <div class="text-right">
+                        <span class="text-sm font-mono font-black text-amber-500 tracking-tight">
+                            @String.Format("{0:N0}", item.TotalPrice)
+                        </span>
+                        <span class="text-[9px] text-amber-600 font-bold ml-0.5">MMK</span>
+                    </div>
+
+                    <!-- Action Control Matrix (Right Aligned) -->
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <button type="button" onclick="promptEditPrice('@item.ProductId', '@item.UnitId', @item.UnitPrice)"
+                                class="text-neutral-400 hover:text-amber-400 bg-neutral-900/60 border border-neutral-800 px-2 py-1 rounded-md text-[10px] font-medium flex items-center gap-1.5 transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[13px]">edit_square</span>
+                            <span>Price</span>
+                        </button>
+
+                        <button type="button" onclick="deleteCartItem('@item.ProductId', '@item.UnitId')"
+                                class="text-neutral-500 hover:text-red-400 bg-neutral-900/60 border border-neutral-800 p-1 rounded-md transition-all active:scale-95 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[14px]">delete</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        }
+    </div>
+
+    <!-- BALANCE FOOTER MATRIX OVERLAY -->
+    <div class="pt-3.5 space-y-2 border-t border-neutral-800 mt-4 bg-gradient-to-b from-transparent to-neutral-900/30 p-3 rounded-xl">
+        <div class="flex justify-between items-center text-xs px-1">
+            <span class="text-neutral-500 font-medium">Subtotal</span>
+            <span class="text-neutral-300 font-mono font-semibold">@String.Format("{0:N0}", cart.Subtotal) <span class="text-[10px] text-neutral-500">MMK</span></span>
+        </div>
+        <div class="flex justify-between items-center text-xs px-1">
+            <span class="text-neutral-500 font-medium">Tax <span class="text-[10px] text-neutral-600 font-mono">(8.5%)</span></span>
+            <span class="text-neutral-300 font-mono font-semibold">@String.Format("{0:N0}", cart.Tax) <span class="text-[10px] text-neutral-500">MMK</span></span>
+        </div>
+
+        <div class="flex justify-between items-center text-sm font-bold text-neutral-100 pt-2.5 border-t border-neutral-800/80 px-1">
+            <span class="tracking-wide text-neutral-200">Total Payable</span>
+            <span class="text-xl font-black text-amber-500 font-mono tracking-tight">
+                @String.Format("{0:N0}", cart.Total) <span class="text-xs font-bold text-amber-600">MMK</span>
+            </span>
+        </div>
+    </div>
+}

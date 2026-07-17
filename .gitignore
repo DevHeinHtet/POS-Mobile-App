@@ -1,0 +1,65 @@
+## Visual Studio Build Outputs
+## ----------------------------
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleasePublic/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Cc]ontentFiles/
+[Mm]odules/
+
+## .NET Tools and Packages
+## -----------------------
+.dotnet/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Paket dependency manager
+.paket/
+
+## Visual Studio Cache, User Settings, and Temporary Files
+## --------------------------------------------------------
+.vs/
+.user/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Rider & JetBrains IDEs
+## ----------------------
+.idea/
+*.sln.iml
+
+## Visual Studio Code
+## ------------------
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+## Frontend Tooling (If using npm/webpack/gulp in your MVC app)
+## -------------------------------------------------------------
+node_modules/
+/wwwroot/lib/
+dist/
+.eslintcache
+
+## Operating System Files
+## ----------------------
+.DS_Store
+Thumbs.db
+
+## Secrets and Local Configurations
+## --------------------------------
+appsettings.Development.json
+*.usersecrets

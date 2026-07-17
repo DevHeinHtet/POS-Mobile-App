@@ -1,0 +1,31 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace POSMobileApp.Models;
+
+public partial class MstCurrencyExchangeView
+{
+    public string CurrencyExchangeId { get; set; } = null!;
+
+    public string? CurrencyExchangeName { get; set; }
+
+    public decimal? CurrencyExchangeRate { get; set; }
+
+    public bool Active { get; set; }
+
+    public string CreatedBy { get; set; } = null!;
+
+    public DateTime CreatedOn { get; set; }
+
+    public string ModifiedBy { get; set; } = null!;
+
+    public DateTime ModifiedOn { get; set; }
+
+    public string LastAction { get; set; } = null!;
+
+    public string? CreatedByCode { get; set; }
+
+    public string? ModifiedByCode { get; set; }
+
+    public string? CurrencyExchangeCode { get; set; }
+}
