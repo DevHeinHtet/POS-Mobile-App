@@ -1,78 +1,63 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using POSMobileApp.Data;
-using POSMobileApp.Extensions;
-using POSMobileApp.ViewModels.Carts;
-using POSMobileApp.ViewModels.Categories;
+using POSMobileApp.Services.Invoices;
+using POSMobileApp.Services.Staffs;
 using POSMobileApp.ViewModels.Products;
-
 
 namespace POSMobileApp.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly AppDbContext _context;
-        private const string CartSessionKey = "POS_Cart";
+        private readonly IProductService _productService;
+        private readonly ICategoryService _categoryService;
 
-        public ProductsController(AppDbContext context)
+        public ProductsController(IProductService productService, ICategoryService categoryService)
         {
-            _context = context;
+            _productService = productService;
+            _categoryService = categoryService;
         }
 
-        public async Task<IActionResult> Index(string category = "All")
+        public async Task<IActionResult> Index()
         {
-            var categories = await _context.EmrGenerics.Where(x => x.Active).Select(x => new CategorySummaryVM { Id = x.GenericId, Name = x.GenericName }).ToListAsync();
-            ViewBag.Categories = categories;
+            ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
 
-            TempData["ActiveCategory"] = categories;
-
-            var cart = HttpContext.Session.GetObjectFromJson<CartSummaryVM>(CartSessionKey) ?? new CartSummaryVM();
-
-            TempData["CartItemCount"] = cart.Items.Count;
-            TempData["CartTotal"] = cart.Total;
-
-            var productList = await _context.EmrItemViews.Where(x => x.Active).Select(x => new ProductSummaryVM(x.ItemId, x.ItemName, x.ItemNo)).ToListAsync();
-
-            return View(productList);
+            return View();
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetDetail(string id)
+        public async Task<IActionResult> GetProductsData(string productNameAndCode, string categoryId, int page = 1)
         {
-            var product = await _context.EmrItems.FirstOrDefaultAsync(x => x.ItemId == id);
-            if (product == null) return NotFound();
+            var result = await _productService.GetProductsDataAsync(productNameAndCode, categoryId, page);
 
-            var productDetail = new ProductDetailVM
+            return Json(new
             {
-                ProductId = product.ItemId,
-                CategoryId = product.GenericId,
-                ProductName = product.ItemName,
-                Description = product.Remark,
-                ProductCode = product.ItemNo,
-                ShortCode = product.ShortCode
-            };
+                items = result.Items,
+                totalCount = result.TotalCount,
+                currentPage = result.CurrentPage,
+                totalPages = result.TotalPages,
+                hasPreviousPage = result.HasPreviousPage,
+                hasNextPage = result.HasNextPage
+            });
+        }
 
-            var productUnitList = await (
-                from unit in _context.EmrItemUoms
-                join price in _context.EmrItemPrices
-                    on unit.ItemUomid equals price.UnitId into prices
-                from price in prices.DefaultIfEmpty()
-                where unit.ItemId == id
-                select new ProductUnitVM
-                {
-                    UnitId = unit.ItemUomid,
-                    UnitName = unit.UomLabel,
-                    UnitPrice = price != null ? price.Price ?? 0 : 0,
-                    IsReportUnit = unit.IsReportUnit ?? false
-                }
-            ).ToListAsync();
+        [HttpGet]
+        public async Task<IActionResult> GetProductDetail(string id)
+        {
+            var product = await _productService.GetProductDetailByIdAsync(id);
+            return Json(product);
+        }
 
-            productDetail.ProductUnits = productUnitList;
+        [HttpPost]
+        public async Task<IActionResult> UpdateUnitPrices([FromBody] UpdatePricesRequestVM model)
+        {
+            if (model == null || model.Units == null || !model.Units.Any())
+                return Json(new { success = false, message = "Invalid price payload." });
 
-            var jsonData = JsonConvert.SerializeObject(productDetail);
+            var result = await _productService.UpdateUnitPricesAsync(model);
 
-            return Json(productDetail);
+            if (!result)
+                return Json(new { success = false, message = "Failed to update prices. Records not found." });
+
+            return Json(new { success = true, message = "Unit prices updated successfully!" });
         }
     }
 }

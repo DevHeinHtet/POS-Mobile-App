@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using POSMobileApp.Data;
 using POSMobileApp.Services.Customers;
+using POSMobileApp.Services.Invoices;
 using POSMobileApp.Services.Staffs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,11 @@ builder.Services.AddSession();
 
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+
 
 var app = builder.Build();
 
@@ -37,8 +43,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Products}/{action=Index}/{id?}")
+    pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

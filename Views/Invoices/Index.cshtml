@@ -5,9 +5,7 @@
 }
 
 <div class="h-full flex flex-col bg-[#121212] p-4 sm:p-6 overflow-hidden">
-    <!-- Header Area (Filters Toggle Only) -->
     <div class="flex items-center justify-end pb-5 border-b border-neutral-800/60 shrink-0">
-        <!-- Mobile Toggle Button for Filters -->
         <button type="button" id="btnToggleFilters" class="md:hidden px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold rounded-xl border border-neutral-700/40 transition flex items-center gap-1.5">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
@@ -16,7 +14,6 @@
         </button>
     </div>
 
-    <!-- Collapsible Filter Form -->
     <form id="filterForm" class="hidden md:flex mt-6 bg-[#1c1c1e] border border-neutral-800/80 rounded-2xl p-4 flex-wrap items-end gap-4 shadow-lg shrink-0">
         <input type="hidden" id="currentPage" name="page" value="1" />
 
@@ -26,36 +23,79 @@
                    class="w-full bg-[#121212] border border-neutral-800 focus:border-neutral-700 text-neutral-200 placeholder-neutral-600 rounded-xl px-3 py-2 text-xs focus:outline-none transition" />
         </div>
 
-        <div class="flex flex-col gap-1.5 flex-1 min-w-[180px] w-full">
-            <label for="filterCustomerId" class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Customer</label>
-            <select id="filterCustomerId" name="customerId" class="w-full bg-[#121212] border border-neutral-800 focus:border-neutral-700 text-neutral-200 rounded-xl px-3 py-2 text-xs focus:outline-none transition">
-                <option value="">All Customers</option>
+        <div class="flex flex-col gap-1.5 flex-1 min-w-[180px] w-full relative">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Customer</label>
+            <input type="hidden" id="filterCustomerId" name="customerId" value="" />
+            
+            <button type="button" id="btnCustomerDropdown" class="w-full bg-[#121212] border border-neutral-800 text-neutral-200 rounded-xl px-3 py-2 text-xs text-left flex items-center justify-between transition focus:outline-none focus:border-neutral-700">
+                <span id="selectedCustomerText" class="truncate text-neutral-400">All Customers</span>
+                <svg class="w-3.5 h-3.5 text-neutral-400 shrink-0 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+
+            <div id="customerMenu" class="hidden absolute z-50 left-0 right-0 top-full mt-1.5 w-full bg-[#1c1c1e] border border-neutral-700/80 rounded-xl shadow-2xl max-h-48 overflow-y-auto divide-y divide-neutral-800/60">
+                <div data-value="" data-label="All Customers" class="dropdown-item px-3 py-2.5 text-xs text-neutral-400 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                    All Customers
+                </div>
                 @foreach (var customer in customers)
                 {
-                    <option value="@customer.Key">@customer.Value</option>
+                    <div data-value="@customer.Key" data-label="@customer.Value" class="dropdown-item px-3 py-2.5 text-xs text-neutral-200 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                        @customer.Value
+                    </div>
                 }
-            </select>
+            </div>
         </div>
 
-        <div class="flex flex-col gap-1.5 flex-1 min-w-[180px] w-full">
-            <label for="filterStaffId" class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Staff / Operator</label>
-            <select id="filterStaffId" name="staffId" class="w-full bg-[#121212] border border-neutral-800 focus:border-neutral-700 text-neutral-200 rounded-xl px-3 py-2 text-xs focus:outline-none transition">
-                <option value="">All Staff</option>
+        <div class="flex flex-col gap-1.5 flex-1 min-w-[180px] w-full relative">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Staff / Operator</label>
+            <input type="hidden" id="filterStaffId" name="staffId" value="" />
+            
+            <button type="button" id="btnStaffDropdown" class="w-full bg-[#121212] border border-neutral-800 text-neutral-200 rounded-xl px-3 py-2 text-xs text-left flex items-center justify-between transition focus:outline-none focus:border-neutral-700">
+                <span id="selectedStaffText" class="truncate text-neutral-400">All Staff</span>
+                <svg class="w-3.5 h-3.5 text-neutral-400 shrink-0 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+
+            <div id="staffMenu" class="hidden absolute z-50 left-0 right-0 top-full mt-1.5 w-full bg-[#1c1c1e] border border-neutral-700/80 rounded-xl shadow-2xl max-h-48 overflow-y-auto divide-y divide-neutral-800/60">
+                <div data-value="" data-label="All Staff" class="dropdown-item px-3 py-2.5 text-xs text-neutral-400 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                    All Staff
+                </div>
                 @foreach (var staff in staffs)
                 {
-                    <option value="@staff.Key">@staff.Value</option>
+                    <div data-value="@staff.Key" data-label="@staff.Value" class="dropdown-item px-3 py-2.5 text-xs text-neutral-200 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                        @staff.Value
+                    </div>
                 }
-            </select>
+            </div>
         </div>
 
-        <div class="flex flex-col gap-1.5 w-full md:w-40">
-            <label for="filterStatus" class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Status</label>
-            <select id="filterStatus" name="status" class="w-full bg-[#121212] border border-neutral-800 focus:border-neutral-700 text-neutral-200 rounded-xl px-3 py-2 text-xs focus:outline-none transition">
-                <option value="">All Statuses</option>
-                <option value="New">New</option>
-                <option value="Paid">Paid</option>
-                <option value="Completed">Completed</option>
-            </select>
+        <div class="flex flex-col gap-1.5 w-full md:w-40 relative">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Status</label>
+            <input type="hidden" id="filterStatus" name="status" value="" />
+            
+            <button type="button" id="btnStatusDropdown" class="w-full bg-[#121212] border border-neutral-800 text-neutral-200 rounded-xl px-3 py-2 text-xs text-left flex items-center justify-between transition focus:outline-none focus:border-neutral-700">
+                <span id="selectedStatusText" class="truncate text-neutral-400">All Statuses</span>
+                <svg class="w-3.5 h-3.5 text-neutral-400 shrink-0 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+
+            <div id="statusMenu" class="hidden absolute z-50 left-0 right-0 top-full mt-1.5 w-full bg-[#1c1c1e] border border-neutral-700/80 rounded-xl shadow-2xl max-h-48 overflow-y-auto divide-y divide-neutral-800/60">
+                <div data-value="" data-label="All Statuses" class="dropdown-item px-3 py-2.5 text-xs text-neutral-400 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                    All Statuses
+                </div>
+                <div data-value="New" data-label="New" class="dropdown-item px-3 py-2.5 text-xs text-neutral-200 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                    New
+                </div>
+                <div data-value="Paid" data-label="Paid" class="dropdown-item px-3 py-2.5 text-xs text-neutral-200 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                    Paid
+                </div>
+                <div data-value="Completed" data-label="Completed" class="dropdown-item px-3 py-2.5 text-xs text-neutral-200 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                    Completed
+                </div>
+            </div>
         </div>
 
         <div class="flex items-center gap-2 w-full md:w-auto justify-end">
@@ -68,11 +108,9 @@
         </div>
     </form>
 
-    <!-- Content Container -->
     <div class="flex-1 min-h-0 mt-6 bg-[#1c1c1e] border border-neutral-800/80 rounded-2xl overflow-hidden flex flex-col shadow-xl">
         <div class="overflow-y-auto flex-1 p-0">
 
-            <!-- DESKTOP VIEW: HTML Table -->
             <div class="hidden md:block">
                 <table class="w-full text-left border-collapse min-w-[900px]">
                     <thead>
@@ -112,6 +150,41 @@
     </div>
 </div>
 
+<div id="detailsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md transition-opacity duration-200">
+    <div class="bg-[#161618] border-0 sm:border sm:border-neutral-800/80 w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl flex flex-col shadow-2xl overflow-hidden">
+        <!-- Modal Header -->
+        <div class="px-5 sm:px-6 py-4 border-b border-neutral-800/80 flex items-center justify-between bg-[#111113] shrink-0">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400">POS Invoice Detail</h3>
+                    <p id="modalInvoiceNo" class="font-mono font-bold text-neutral-100 text-sm leading-tight mt-0.5"></p>
+                </div>
+            </div>
+            <button type="button" id="btnCloseModal" class="text-neutral-400 hover:text-neutral-100 p-2 rounded-xl hover:bg-neutral-800/80 transition shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <!-- Modal Body (Scrollable Area) -->
+        <div id="modalBody" class="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5 text-xs text-neutral-300">
+            <!-- Dynamic Content Injected Here -->
+        </div>
+        <!-- Modal Footer -->
+        <div class="px-5 sm:px-6 py-3.5 border-t border-neutral-800/80 bg-[#111113] flex items-center justify-between shrink-0 gap-3">
+            <span class="text-[11px] text-neutral-500 hidden sm:inline">Transaction details parsed from POS ledger</span>
+            <button type="button" id="btnCloseModalFooter" class="w-full sm:w-auto px-5 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-semibold rounded-xl text-xs transition border border-neutral-700/50 text-center">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const tableBody = document.getElementById("invoiceTableBody");
@@ -122,6 +195,70 @@
         const currentPageInput = document.getElementById("currentPage");
         const btnToggleFilters = document.getElementById("btnToggleFilters");
 
+        const detailsModal = document.getElementById("detailsModal");
+        const modalInvoiceNo = document.getElementById("modalInvoiceNo");
+        const modalBody = document.getElementById("modalBody");
+        const btnCloseModal = document.getElementById("btnCloseModal");
+        const btnCloseModalFooter = document.getElementById("btnCloseModalFooter");
+
+        const btnCustomerDropdown = document.getElementById("btnCustomerDropdown");
+        const customerMenu = document.getElementById("customerMenu");
+        const filterCustomerId = document.getElementById("filterCustomerId");
+        const selectedCustomerText = document.getElementById("selectedCustomerText");
+
+        const btnStaffDropdown = document.getElementById("btnStaffDropdown");
+        const staffMenu = document.getElementById("staffMenu");
+        const filterStaffId = document.getElementById("filterStaffId");
+        const selectedStaffText = document.getElementById("selectedStaffText");
+
+        const btnStatusDropdown = document.getElementById("btnStatusDropdown");
+        const statusMenu = document.getElementById("statusMenu");
+        const filterStatus = document.getElementById("filterStatus");
+        const selectedStatusText = document.getElementById("selectedStatusText");
+
+        function setupCustomDropdown(btn, menu, hiddenInput, labelSpan) {
+            btn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                document.querySelectorAll('.dropdown-menu-open').forEach(m => {
+                    if (m !== menu) m.classList.add('hidden');
+                });
+                menu.classList.toggle("hidden");
+                menu.classList.toggle("dropdown-menu-open");
+            });
+
+            menu.addEventListener("click", function (e) {
+                const item = e.target.closest('.dropdown-item');
+                if (!item) return;
+
+                const val = item.getAttribute("data-value");
+                const label = item.getAttribute("data-label");
+
+                hiddenInput.value = val;
+                labelSpan.textContent = label;
+
+                if (val === "") {
+                    labelSpan.classList.add("text-neutral-400");
+                    labelSpan.classList.remove("text-neutral-200");
+                } else {
+                    labelSpan.classList.remove("text-neutral-400");
+                    labelSpan.classList.add("text-neutral-200");
+                }
+
+                menu.classList.add("hidden");
+                menu.classList.remove("dropdown-menu-open");
+            });
+        }
+
+        setupCustomDropdown(btnCustomerDropdown, customerMenu, filterCustomerId, selectedCustomerText);
+        setupCustomDropdown(btnStaffDropdown, staffMenu, filterStaffId, selectedStaffText);
+        setupCustomDropdown(btnStatusDropdown, statusMenu, filterStatus, selectedStatusText);
+
+        document.addEventListener("click", function () {
+            customerMenu.classList.add("hidden");
+            staffMenu.classList.add("hidden");
+            statusMenu.classList.add("hidden");
+        });
+
         function escapeHtml(str) {
             if (!str) return '';
             return String(str)
@@ -130,6 +267,157 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
+        }
+
+        function closeModal() {
+            detailsModal.classList.add("hidden");
+        }
+
+        btnCloseModal.addEventListener("click", closeModal);
+        btnCloseModalFooter.addEventListener("click", closeModal);
+        detailsModal.addEventListener("click", function (e) {
+            if (e.target === detailsModal) closeModal();
+        });
+
+        function fetchSaleDetails(id) {
+            modalInvoiceNo.textContent = '';
+            modalBody.innerHTML = `
+                <div class="py-12 text-center text-neutral-400 text-xs">
+                    <svg class="animate-spin h-5 w-5 mx-auto mb-2 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading invoice details...
+                </div>`;
+            detailsModal.classList.remove("hidden");
+
+            fetch(`@Url.Action("GetInvoiceDetail", "Invoices")?id=${id}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to load detail');
+                    return res.json();
+                })
+                .then(data => {
+                    renderModalContent(data);
+                })
+                .catch(err => {
+                    console.error("Detail Fetch Error:", err);
+                    modalBody.innerHTML = `<div class="py-12 text-center text-rose-400 text-xs font-medium">Unable to load details for this invoice.</div>`;
+                });
+        }
+
+        function renderModalContent(data) {
+            const invoiceNo = data.invoiceNo || data.InvoiceNo;
+            const invoiceDate = data.invoiceDate || data.InvoiceDate;
+            const customerName = data.customerName || data.CustomerName;
+            const operatorName = data.operatorName || data.OperatorName || 'N/A';
+            const status = data.status || data.Status || 'New';
+
+            const totalCostVal = data.totalCost ?? data.TotalCost ?? 0;
+            const paidAmountVal = data.paidAmount ?? data.PaidAmount ?? 0;
+            const balanceVal = totalCostVal - paidAmountVal;
+
+            modalInvoiceNo.textContent = invoiceNo ? `#${invoiceNo}` : 'N/A';
+
+            const dateStr = invoiceDate ? new Date(invoiceDate).toISOString().replace('T', ' ').substring(0, 16) : '-';
+            const totalCost = new Intl.NumberFormat().format(totalCostVal);
+            const paidAmount = new Intl.NumberFormat().format(paidAmountVal);
+            const balance = new Intl.NumberFormat().format(balanceVal);
+
+            let statusBadge = '';
+            if (status === 'Paid') {
+                statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Paid</span>`;
+            } else if (status === 'Completed') {
+                statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20"><span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> Completed</span>`;
+            } else {
+                statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> ${escapeHtml(status)}</span>`;
+            }
+
+            const items = data.invoiceItems || data.InvoiceItems || [];
+            let itemsTableRows = '';
+
+            if (items.length > 0) {
+                items.forEach(item => {
+                    const prodName = item.productName || item.ProductName || 'Item';
+                    const prodUnit = item.productUnit || item.ProductUnit || '';
+                    const salePriceVal = item.salePrice ?? item.SalePrice ?? 0;
+                    const totalQtyVal = item.totalQuantity ?? item.TotalQuantity ?? 1;
+                    const subtotalVal = totalQtyVal * salePriceVal;
+
+                    const priceStr = new Intl.NumberFormat().format(salePriceVal);
+                    const subtotalStr = new Intl.NumberFormat().format(subtotalVal);
+                    const qtyStr = `${totalQtyVal}${prodUnit ? ' ' + escapeHtml(prodUnit) : ''}`;
+
+                    itemsTableRows += `
+                        <tr class="border-b border-neutral-800/40 hover:bg-neutral-800/30 transition-colors text-xs">
+                            <td class="py-3 px-3 text-neutral-200 font-medium min-w-0">
+                                <p class="truncate" title="${escapeHtml(prodName)}">${escapeHtml(prodName)}</p>
+                            </td>
+                            <td class="py-3 px-2 text-center text-neutral-400 font-mono whitespace-nowrap">x${qtyStr}</td>
+                            <td class="py-3 px-3 text-right text-neutral-400 font-mono whitespace-nowrap">${priceStr}</td>
+                            <td class="py-3 px-3 text-right text-neutral-100 font-bold font-mono whitespace-nowrap">${subtotalStr}</td>
+                        </tr>`;
+                });
+            } else {
+                itemsTableRows = `<tr><td colspan="4" class="py-8 text-center text-neutral-500 text-xs">No registered line items found.</td></tr>`;
+            }
+
+            modalBody.innerHTML = `
+                <!-- Meta Info Tiles -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 bg-[#0e0e10] rounded-xl border border-neutral-800/80">
+                    <div class="min-w-0">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-neutral-500 block">Customer</span>
+                        <span class="text-neutral-200 font-semibold text-xs truncate block mt-0.5" title="${escapeHtml(customerName || 'N/A')}">${escapeHtml(customerName || 'N/A')}</span>
+                    </div>
+                    <div class="min-w-0">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-neutral-500 block">Cashier / Staff</span>
+                        <span class="text-neutral-300 text-xs truncate block mt-0.5" title="${escapeHtml(operatorName)}">${escapeHtml(operatorName)}</span>
+                    </div>
+                    <div class="min-w-0">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-neutral-500 block">Date & Time</span>
+                        <span class="text-neutral-300 text-xs block font-mono mt-0.5">${dateStr}</span>
+                    </div>
+                    <div class="min-w-0">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-neutral-500 block mb-1">Status</span>
+                        ${statusBadge}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Order Items</h4>
+                        <span class="text-[11px] font-mono text-neutral-500">${items.length} item(s)</span>
+                    </div>
+                    <div class="border border-neutral-800/80 rounded-xl overflow-hidden bg-[#0e0e10]">
+                        <table class="w-full text-left border-collapse table-fixed">
+                            <thead>
+                                <tr class="bg-[#121214] border-b border-neutral-800 text-[10px] font-bold tracking-wider text-neutral-400 uppercase">
+                                    <th class="py-2.5 px-3 w-[45%]">Item Name</th>
+                                    <th class="py-2.5 px-2 text-center w-[15%]">Qty</th>
+                                    <th class="py-2.5 px-3 text-right w-[20%]">Unit Price</th>
+                                    <th class="py-2.5 px-3 text-right w-[20%]">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-neutral-800/40">
+                                ${itemsTableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-[#0e0e10] border border-neutral-800/80 rounded-xl p-4 space-y-2.5">
+                    <div class="flex justify-between items-center text-xs text-neutral-400">
+                        <span>Subtotal / Total Amount</span>
+                        <span class="font-mono font-semibold text-neutral-200">${totalCost}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-neutral-400">
+                        <span>Amount Tendered / Paid</span>
+                        <span class="font-mono font-semibold text-emerald-400">${paidAmount}</span>
+                    </div>
+                    <div class="pt-2.5 border-t border-neutral-800 flex justify-between items-center">
+                        <span class="text-xs font-bold text-neutral-300">Balance Due</span>
+                        <span class="font-mono font-bold text-base ${balanceVal > 0 ? 'text-rose-400' : 'text-neutral-400'}">${balance}</span>
+                    </div>
+                </div>`;
         }
 
         btnToggleFilters.addEventListener("click", function() {
@@ -184,22 +472,28 @@
             let cardHtml = '';
 
             items.forEach(invoice => {
-                const safeInvoiceNo = escapeHtml(invoice.invoiceNo);
-                const safeCustomerName = escapeHtml(invoice.customerName || 'N/A');
-                const safeOperatorName = escapeHtml(invoice.operatorName || 'N/A');
-                const safeStatus = escapeHtml(invoice.status || 'New');
+                const invoiceId = invoice.invoiceId || invoice.InvoiceId;
+                const safeInvoiceNo = escapeHtml(invoice.invoiceNo || invoice.InvoiceNo);
+                const safeCustomerName = escapeHtml(invoice.customerName || invoice.CustomerName || 'N/A');
+                const safeOperatorName = escapeHtml(invoice.operatorName || invoice.OperatorName || 'N/A');
+                const rawStatus = invoice.status || invoice.Status || 'New';
+                const safeStatus = escapeHtml(rawStatus);
 
-                const dateStr = invoice.invoiceDate ? new Date(invoice.invoiceDate).toISOString().replace('T', ' ').substring(0, 16) : '-';
-                const totalCost = new Intl.NumberFormat().format(invoice.totalCost || 0);
-                const balance = new Intl.NumberFormat().format(invoice.balance || 0);
+                const invoiceDate = invoice.invoiceDate || invoice.InvoiceDate;
+                const totalCostVal = invoice.totalCost ?? invoice.TotalCost ?? 0;
+                const paidAmountVal = invoice.paidAmount ?? invoice.PaidAmount ?? 0;
+                const balanceVal = invoice.balance ?? invoice.Balance ?? (totalCostVal - paidAmountVal);
 
-                const balanceColor = (invoice.balance || 0) > 0 ? 'text-rose-400' : 'text-neutral-400';
-                const detailsUrl = `@Url.Action("Details", "Invoices")/${invoice.invoiceId}`;
+                const dateStr = invoiceDate ? new Date(invoiceDate).toISOString().replace('T', ' ').substring(0, 16) : '-';
+                const totalCost = new Intl.NumberFormat().format(totalCostVal);
+                const balance = new Intl.NumberFormat().format(balanceVal);
+
+                const balanceColor = balanceVal > 0 ? 'text-rose-400' : 'text-neutral-400';
 
                 let statusBadge = '';
-                if (invoice.status === 'Paid') {
+                if (rawStatus === 'Paid') {
                     statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Paid</span>`;
-                } else if (invoice.status === 'Completed') {
+                } else if (rawStatus === 'Completed') {
                     statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">Completed</span>`;
                 } else {
                     statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">${safeStatus}</span>`;
@@ -215,9 +509,9 @@
                         <td class="py-4 px-6 text-right font-semibold text-neutral-200">${totalCost}</td>
                         <td class="py-4 px-6 text-right font-semibold ${balanceColor}">${balance}</td>
                         <td class="py-4 px-6 text-center">
-                            <a href="${detailsUrl}" class="inline-flex items-center px-3 py-1 bg-neutral-800 hover:bg-neutral-700 hover:text-neutral-100 text-neutral-300 font-medium rounded-lg transition border border-neutral-700/40 text-[11px]">
+                            <button type="button" data-id="${invoiceId}" class="btn-view-details inline-flex items-center px-3 py-1 bg-neutral-800 hover:bg-neutral-700 hover:text-neutral-100 text-neutral-300 font-medium rounded-lg transition border border-neutral-700/40 text-[11px]">
                                 View Details
-                            </a>
+                            </button>
                         </td>
                     </tr>`;
 
@@ -249,9 +543,9 @@
 
                         <div class="flex items-center justify-between pt-1 mt-1 border-t border-neutral-800/40">
                             <span class="text-[11px] text-neutral-500">${dateStr}</span>
-                            <a href="${detailsUrl}" class="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-semibold rounded-lg transition border border-neutral-700/50 text-[11px] text-center shadow-sm">
+                            <button type="button" data-id="${invoiceId}" class="btn-view-details px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-semibold rounded-lg transition border border-neutral-700/50 text-[11px] text-center shadow-sm">
                                 View Details
-                            </a>
+                            </button>
                         </div>
                     </div>`;
             });
@@ -259,6 +553,14 @@
             tableBody.innerHTML = tableHtml;
             cardContainer.innerHTML = cardHtml;
         }
+
+        document.addEventListener("click", function (e) {
+            const btn = e.target.closest(".btn-view-details");
+            if (btn) {
+                const id = btn.getAttribute("data-id");
+                if (id) fetchSaleDetails(id);
+            }
+        });
 
         function renderPagination(data) {
             paginationInfo.innerHTML = `Showing Page <span class="font-medium text-neutral-200">${data.currentPage}</span> of <span class="font-medium text-neutral-200">${data.totalPages}</span> <span class="text-neutral-500 sm:ml-1 block sm:inline">(${data.totalCount} entries total)</span>`;
@@ -298,6 +600,20 @@
 
         document.getElementById("btnClear").addEventListener("click", function () {
             filterForm.reset();
+
+            const customDropdowns = [
+                { input: filterCustomerId, label: selectedCustomerText, defaultText: "All Customers" },
+                { input: filterStaffId, label: selectedStaffText, defaultText: "All Staff" },
+                { input: filterStatus, label: selectedStatusText, defaultText: "All Statuses" }
+            ];
+
+            customDropdowns.forEach(item => {
+                item.input.value = "";
+                item.label.textContent = item.defaultText;
+                item.label.classList.add("text-neutral-400");
+                item.label.classList.remove("text-neutral-200");
+            });
+
             currentPageInput.value = 1;
             fetchInvoices();
         });

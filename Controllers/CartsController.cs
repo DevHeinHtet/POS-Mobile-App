@@ -16,14 +16,21 @@ namespace POSMobileApp.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        public IActionResult GetCartComponent()
+        {
+            return ViewComponent("CartItemsList");
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddToCart([FromBody] CartItemVM incomingItem)
         {
             if (incomingItem == null || string.IsNullOrEmpty(incomingItem.ProductId))
-                return BadRequest("Invalid product selection parameters.");
+                return BadRequest(new { success = false, message = "Invalid product selection parameters." });
 
             var product = await _context.EmrItems.FirstOrDefaultAsync(x => x.ItemId == incomingItem.ProductId);
-            if (product == null) return NotFound("Target product missing.");
+            if (product == null)
+                return NotFound(new { success = false, message = "Target product missing." });
 
             var cart = HttpContext.Session.GetObjectFromJson<CartSummaryVM>(CartSessionKey) ?? new CartSummaryVM();
             var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == incomingItem.ProductId && i.UnitId == incomingItem.UnitId && i.UnitPrice == incomingItem.UnitPrice);
@@ -40,14 +47,14 @@ namespace POSMobileApp.Controllers
 
             HttpContext.Session.SetObjectAsJson(CartSessionKey, cart);
 
-            return ViewComponent("CartItemsList");
+            return Ok(new { success = true });
         }
 
         [HttpPost]
         public IActionResult UpdateCartItem([FromBody] UpdateCartItemRequest request)
         {
             if (request == null || string.IsNullOrEmpty(request.ProductId))
-                return BadRequest("Invalid request parameters.");
+                return BadRequest(new { success = false, message = "Invalid request parameters." });
 
             var cart = HttpContext.Session.GetObjectFromJson<CartSummaryVM>(CartSessionKey) ?? new CartSummaryVM();
             var item = cart.Items.FirstOrDefault(i => i.ProductId == request.ProductId && i.UnitId == request.UnitId && i.UnitPrice == request.UnitPrice);
@@ -65,14 +72,14 @@ namespace POSMobileApp.Controllers
                 HttpContext.Session.SetObjectAsJson(CartSessionKey, cart);
             }
 
-            return ViewComponent("CartItemsList");
+            return Ok(new { success = true });
         }
 
         [HttpPost]
         public IActionResult RemoveFromCart([FromBody] RemoveCartItemRequest request)
         {
             if (request == null || string.IsNullOrEmpty(request.ProductId))
-                return BadRequest("Invalid item specifications.");
+                return BadRequest(new { success = false, message = "Invalid item specifications." });
 
             var cart = HttpContext.Session.GetObjectFromJson<CartSummaryVM>(CartSessionKey) ?? new CartSummaryVM();
             var itemToRemove = cart.Items.FirstOrDefault(i => i.ProductId == request.ProductId && i.UnitId == request.UnitId);
@@ -83,7 +90,7 @@ namespace POSMobileApp.Controllers
                 HttpContext.Session.SetObjectAsJson(CartSessionKey, cart);
             }
 
-            return ViewComponent("CartItemsList");
+            return Ok(new { success = true });
         }
     }
 

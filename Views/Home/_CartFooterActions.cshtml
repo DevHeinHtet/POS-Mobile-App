@@ -1,0 +1,67 @@
+﻿@using POSMobileApp.ViewModels
+
+<div class="mb-3 p-3 bg-[#171719] border border-neutral-800/80 rounded-2xl space-y-3 shadow-inner">
+
+    <!-- CUSTOMER DROPDOWN CONTAINER -->
+    <div class="relative w-full custom-customer-dropdown">
+        <input type="hidden" class="customer-select-input" name="CustomerId" value="" />
+
+        <!-- Dropdown Trigger Button -->
+        <button type="button"
+                onclick="toggleCustomerDropdown(this)"
+                class="w-full bg-[#1c1c1e] text-neutral-200 text-xs rounded-xl px-3 py-2.5 border border-neutral-700/80 focus:outline-none focus:border-amber-500 transition-colors flex items-center justify-between font-medium cursor-pointer">
+            <span class="selected-customer-text truncate text-neutral-400">-- Select Customer --</span>
+            <span class="dropdown-icon material-symbols-outlined text-neutral-400 text-sm transition-transform duration-200 pointer-events-none">expand_more</span>
+        </button>
+
+        <!-- DROPDOWN MENU (OPENS UPWARD TO PREVENT OVERFLOW) -->
+        <div class="customer-dropdown-menu hidden absolute z-50 left-0 right-0 bottom-full mb-1.5 w-full bg-[#1c1c1e] border border-neutral-700/80 rounded-xl shadow-2xl max-h-48 overflow-y-auto divide-y divide-neutral-800/60">
+
+            <div onclick="selectCustomer('', '-- Select Customer --')"
+                 class="px-3 py-2.5 text-xs text-neutral-400 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                -- Select Customer --
+            </div>
+
+            @if (ViewBag.Customers != null)
+            {
+                foreach (var customer in ViewBag.Customers as List<DropdownViewModel> ?? new List<DropdownViewModel>())
+                {
+                    <div onclick="selectCustomer('@customer.Key', '@customer.Value')"
+                         class="px-3 py-2.5 text-xs text-neutral-200 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                        @customer.Value
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- PAYMENT AMOUNT & QUICK ADD BUTTONS -->
+    <div class="space-y-2">
+        <div class="relative">
+            <input type="number"
+                   id="paymentAmountInput"
+                   placeholder="0"
+                   step="100"
+                   min="0"
+                   oninput="calculateChange()"
+                   class="w-full bg-[#1c1c1e] text-amber-500 font-mono font-black text-lg rounded-xl pl-3 pr-14 py-2 border border-neutral-700/80 focus:outline-none focus:border-amber-500 transition-colors" />
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-500 select-none">MMK</span>
+        </div>
+
+        <div class="grid grid-cols-4 gap-1.5 pt-0.5">
+            <button type="button" onclick="setExactAmount()" class="bg-[#242427] hover:bg-neutral-700 text-[10px] font-bold text-amber-400 py-1.5 rounded-lg transition active:scale-95 border border-amber-500/20">Exact</button>
+            <button type="button" onclick="addPaymentAmount(1000)" class="bg-[#242427] hover:bg-neutral-700 text-[10px] font-semibold text-neutral-300 py-1.5 rounded-lg transition active:scale-95">+1k</button>
+            <button type="button" onclick="addPaymentAmount(5000)" class="bg-[#242427] hover:bg-neutral-700 text-[10px] font-semibold text-neutral-300 py-1.5 rounded-lg transition active:scale-95">+5k</button>
+            <button type="button" onclick="addPaymentAmount(10000)" class="bg-[#242427] hover:bg-neutral-700 text-[10px] font-semibold text-neutral-300 py-1.5 rounded-lg transition active:scale-95">+10k</button>
+        </div>
+    </div>
+</div>
+
+<!-- PAY BUTTON -->
+<div class="space-y-2">
+    <button type="button"
+            onclick="processPayment('General')"
+            class="w-full bg-amber-700 hover:bg-amber-600 text-amber-50 py-3 rounded-xl font-bold uppercase tracking-wide text-xs transition active:scale-95 shadow-md">
+        Pay
+    </button>
+</div>

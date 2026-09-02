@@ -17,7 +17,6 @@
 }
 else
 {
-    <!-- CARDS WRAPPER GRID -->
     <div class="space-y-2 max-h-[54vh] overflow-y-auto pr-1 no-scrollbar">
         @foreach (var item in cart.Items)
         {
@@ -25,10 +24,8 @@ else
                  data-product-id="@item.ProductId"
                  data-unit-id="@item.UnitId">
 
-                <!-- LEFT SIDE: Product Info & Quantity Adjuster -->
                 <div class="flex-1 min-w-0 space-y-2.5">
                     <div>
-                        <!-- Title & Unit Tag -->
                         <div class="flex items-center gap-2 flex-wrap">
                             <h4 class="text-[13px] font-bold text-neutral-100 line-clamp-1 leading-snug tracking-wide group-hover:text-amber-400 transition-colors">
                                 @item.ProductName
@@ -39,9 +36,7 @@ else
                         </div>
                     </div>
 
-                    <!-- Ergonomic Stepper (Left Aligned) -->
                     <div class="flex items-center bg-neutral-950 border border-neutral-800 rounded-lg p-0.5 shadow-inner w-fit">
-                        <!-- Minus Button -->
                         <button type="button" onclick="adjustQty('@item.ProductId', '@item.UnitId', @item.UnitPrice, @(item.Quantity - 1))"
                                 class="text-sm font-black text-neutral-400 hover:text-white hover:bg-neutral-800 w-6 h-6 rounded-md flex items-center justify-center transition-all select-none active:scale-90">
                             −
@@ -49,7 +44,6 @@ else
                         <span class="text-xs font-mono font-black text-neutral-100 w-7 text-center select-none">
                             @item.Quantity
                         </span>
-                        <!-- Plus Button -->
                         <button type="button" onclick="adjustQty('@item.ProductId', '@item.UnitId', @item.UnitPrice, @(item.Quantity + 1))"
                                 class="text-sm font-black text-neutral-400 hover:text-white hover:bg-neutral-800 w-6 h-6 rounded-md flex items-center justify-center transition-all select-none active:scale-90">
                             +
@@ -57,9 +51,7 @@ else
                     </div>
                 </div>
 
-                <!-- RIGHT SIDE: Price Total & Action Controls -->
                 <div class="flex flex-col items-end justify-between shrink-0 self-stretch my-0.5">
-                    <!-- Clean Total Presentation -->
                     <div class="text-right">
                         <span class="text-sm font-mono font-black text-amber-500 tracking-tight">
                             @String.Format("{0:N0}", item.TotalPrice)
@@ -67,7 +59,6 @@ else
                         <span class="text-[9px] text-amber-600 font-bold ml-0.5">MMK</span>
                     </div>
 
-                    <!-- Action Control Matrix (Right Aligned) -->
                     <div class="flex items-center gap-1.5 mt-2">
                         <button type="button" onclick="promptEditPrice('@item.ProductId', '@item.UnitId', @item.UnitPrice)"
                                 class="text-neutral-400 hover:text-amber-400 bg-neutral-900/60 border border-neutral-800 px-2 py-1 rounded-md text-[10px] font-medium flex items-center gap-1.5 transition-all active:scale-95">
@@ -86,7 +77,6 @@ else
         }
     </div>
 
-    <!-- BALANCE FOOTER MATRIX OVERLAY -->
     <div class="pt-3.5 space-y-2 border-t border-neutral-800 mt-4 bg-gradient-to-b from-transparent to-neutral-900/30 p-3 rounded-xl">
         <div class="flex justify-between items-center text-xs px-1">
             <span class="text-neutral-500 font-medium">Subtotal</span>

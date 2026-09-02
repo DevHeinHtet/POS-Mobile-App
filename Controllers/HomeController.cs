@@ -1,25 +1,96 @@
 using Microsoft.AspNetCore.Mvc;
-using POSMobileApp.Models;
-using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using POSMobileApp.Data;
+using POSMobileApp.Extensions;
+using POSMobileApp.Services.Customers;
+using POSMobileApp.Services.Staffs;
+using POSMobileApp.ViewModels.Carts;
+using POSMobileApp.ViewModels.Categories;
+using POSMobileApp.ViewModels.Products;
 
 namespace POSMobileApp.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly AppDbContext _context;
+        private readonly ICategoryService _categoryService;
+        private readonly ICustomerService _customerService;
+        private const string CartSessionKey = "POS_Cart";
+
+        public HomeController(AppDbContext context, ICategoryService categoryService, ICustomerService customerService)
         {
-            return View();
+            _context = context;
+            _categoryService = categoryService;
+            _customerService = customerService;
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> Index(string categoryId = "")
         {
-            return View();
+            var categories = await _categoryService.GetAllCategoriesAsync();
+
+            categories.Insert(0, new CategorySummaryVM { Id = "", Name = "All" });
+
+            ViewBag.Categories = categories;
+            ViewBag.Customers = await _customerService.GetDropdownDataAsync();
+
+            ViewBag.ActiveCategoryId = categoryId;
+
+            var cart = HttpContext.Session.GetObjectFromJson<CartSummaryVM>(CartSessionKey) ?? new CartSummaryVM();
+
+            TempData["CartItemCount"] = cart.Items.Count;
+            TempData["CartTotal"] = cart.Total;
+
+            var query = _context.EmrItemViews.Where(x => x.Active);
+
+            if (!string.IsNullOrEmpty(categoryId))
+            {
+                query = query.Where(x => x.GenericId == categoryId);
+            }
+
+            var productList = await query
+                .Select(x => new ProductSummaryVM(x.ItemId, x.ItemName, x.ItemNo))
+                .ToListAsync();
+
+            return View(productList);
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpGet]
+        public async Task<IActionResult> GetDetail(string id)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var product = await _context.EmrItems.FirstOrDefaultAsync(x => x.ItemId == id);
+            if (product == null) return NotFound();
+
+            var productDetail = new ProductDetailVM
+            {
+                ProductId = product.ItemId,
+                CategoryId = product.GenericId,
+                ProductName = product.ItemName,
+                Description = product.Remark,
+                ProductCode = product.ItemNo,
+                ShortCode = product.ShortCode
+            };
+
+            var productUnitList = await (
+                from unit in _context.EmrItemUoms
+                join price in _context.EmrItemPrices
+                    on unit.ItemUomid equals price.UnitId into prices
+                from price in prices.DefaultIfEmpty()
+                where unit.ItemId == id
+                select new ProductUnitVM
+                {
+                    UnitId = unit.ItemUomid,
+                    UnitName = unit.UomLabel,
+                    UnitPrice = price != null ? price.Price ?? 0 : 0,
+                    IsReportUnit = unit.IsReportUnit ?? false
+                }
+            ).ToListAsync();
+
+            productDetail.ProductUnits = productUnitList;
+
+            var jsonData = JsonConvert.SerializeObject(productDetail);
+
+            return Json(productDetail);
         }
     }
 }

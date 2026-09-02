@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using POSMobileApp.Data;
+using POSMobileApp.Models;
 using POSMobileApp.ViewModels;
 
 namespace POSMobileApp.Services.Customers
@@ -11,6 +12,11 @@ namespace POSMobileApp.Services.Customers
         public CustomerService(AppDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<MstCustomer> GetByIdAsync(string customerId)
+        {
+            return await _context.MstCustomers.FirstOrDefaultAsync(x => x.CustomerId == customerId && x.Active);
         }
 
         public async Task<IEnumerable<DropdownViewModel>> GetDropdownDataAsync()

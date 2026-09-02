@@ -1,23 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using POSMobileApp.Data;
+using POSMobileApp.Extensions;
 using POSMobileApp.Services.Customers;
+using POSMobileApp.Services.Invoices;
 using POSMobileApp.Services.Staffs;
+using POSMobileApp.ViewModels.Carts;
 using POSMobileApp.ViewModels.Invoices;
+using System.Net.NetworkInformation;
 
 namespace POSMobileApp.Controllers
 {
     public class InvoicesController : Controller
     {
-        private readonly AppDbContext _context;
-        private readonly ICustomerService _customerService;
         private readonly IStaffService _staffService;
+        private readonly IInvoiceService _invoiceService;
+        private readonly ICustomerService _customerService;
 
-        public InvoicesController(AppDbContext context, ICustomerService customerService, IStaffService staffService)
+        private const string CartSessionKey = "POS_Cart";
+
+        public InvoicesController(IStaffService staffService, IInvoiceService invoiceService, ICustomerService customerService)
         {
-            _context = context;
-            _customerService = customerService;
             _staffService = staffService;
+            _invoiceService = invoiceService;
+            _customerService = customerService;
         }
 
         public async Task<IActionResult> Index()
@@ -28,58 +33,45 @@ namespace POSMobileApp.Controllers
             return View();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> MakePayment([FromBody] PaymentRequestVM request)
+        {
+            var cart = HttpContext.Session.GetObjectFromJson<CartSummaryVM>(CartSessionKey);
+
+            if (cart is null || !cart.Items.Any())
+                return Json(new { success = false, message = "Your cart is empty or session has expired." });
+
+            var result = await _invoiceService.SaveInvoiceAsync(request, cart);
+
+            if (!result.IsSuccess)
+                return Json(new { success = false, message = result.ErrorMessage });
+
+            HttpContext.Session.Remove(CartSessionKey);
+
+            return Json(new { success = true, invoiceId = result.Data, message = "Invoice saved successfully!" });
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetInvoicesData(string invoiceNo, string customerId, string staffId, string status, int page = 1)
         {
-            if (page < 1) page = 1;
-            int pageSize = 15;
-
-            var baseQuery = _context.EmrInvoiceViews.Where(c => c.Active == true);
-
-            if (!string.IsNullOrWhiteSpace(invoiceNo))
-                baseQuery = baseQuery.Where(c => c.InvoiceNo.Contains(invoiceNo));
-
-            if (!string.IsNullOrWhiteSpace(customerId))
-                baseQuery = baseQuery.Where(c => c.PatientId == customerId);
-
-            if (!string.IsNullOrWhiteSpace(staffId))
-                baseQuery = baseQuery.Where(c => c.StaffById == staffId);
-
-            if (!string.IsNullOrWhiteSpace(status))
-                baseQuery = baseQuery.Where(c => c.Status == status);
-
-            var totalCount = await baseQuery.CountAsync();
-
-            int calculatedTotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-            if (page > calculatedTotalPages && calculatedTotalPages > 0) page = calculatedTotalPages;
-
-            var invoices = await baseQuery
-                .OrderByDescending(c => c.InvoiceNo)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(row => new InvoiceViewModel
-                {
-                    InvoiceId = row.InvoiceId,
-                    CustomerId = row.PatientId,
-                    CustomerName = row.CustomerName,
-                    InvoiceNo = row.InvoiceNo,
-                    InvoiceDate = row.InvoiceDate,
-                    Status = row.Status,
-                    TotalCost = row.TotalCost,
-                    Balance = row.Balance,
-                    OperatorName = row.OperatorName
-                })
-                .ToListAsync();
+            var result = await _invoiceService.GetInvoicesDataAsync(invoiceNo, customerId, staffId, status, page);
 
             return Json(new
             {
-                items = invoices,
-                totalCount = totalCount,
-                currentPage = page,
-                totalPages = calculatedTotalPages,
-                hasPreviousPage = page > 1,
-                hasNextPage = page < calculatedTotalPages
+                items = result.Items,
+                totalCount = result.TotalCount,
+                currentPage = result.CurrentPage,
+                totalPages = result.TotalPages,
+                hasPreviousPage = result.HasPreviousPage,
+                hasNextPage = result.HasNextPage
             });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetInvoiceDetail(string id)
+        {
+            var invoice = await _invoiceService.GetInvoiceDetailByIdAsync(id);
+            return Json(invoice);
         }
     }
 }

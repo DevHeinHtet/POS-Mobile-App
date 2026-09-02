@@ -1,502 +1,509 @@
 ﻿@using POSMobileApp.ViewModels.Categories
-@model IEnumerable<POSMobileApp.ViewModels.Products.ProductSummaryVM>
 @{
-    ViewData["Title"] = "Menu";
-    var activeCategory = TempData["ActiveCategory"]?.ToString() ?? "All";
-    var cartCount = TempData["CartItemCount"] ?? 0;
-    var cartTotal = TempData["CartTotal"] ?? 0.00m;
-
-    var dbCategories = ViewBag.Categories as List<CategorySummaryVM> ?? new List<CategorySummaryVM>();
+    ViewData["Title"] = "Products";
+    var categories = ViewBag.Categories as IEnumerable<CategorySummaryVM> ?? new List<CategorySummaryVM>();
 }
 
-<div class="h-full flex flex-col lg:flex-row overflow-hidden">
-
-    <!-- MAIN PRODUCT PANEL -->
-    <div class="flex-1 flex flex-col overflow-y-auto px-4 py-4 lg:px-6 space-y-4 pb-28 lg:pb-6">
-
-        <!-- Search Bar -->
-        <div class="relative w-full max-w-xl">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
-                <span class="material-symbols-outlined text-xl">search</span>
-            </span>
-            <input type="text" placeholder="Search products..."
-                   class="w-full bg-[#1c1c1e] text-neutral-200 placeholder-neutral-500 text-sm rounded-xl pl-10 pr-4 py-3 focus:outline-none border border-neutral-800 focus:border-amber-600/50 transition duration-200" />
+<div class="h-full flex flex-col bg-[#121212] p-4 sm:p-6 overflow-hidden">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between pb-5 border-b border-neutral-800/60 shrink-0">
+        <div>
+            <h1 class="text-lg font-bold text-neutral-100">Product List</h1>
+            <p class="text-xs text-neutral-400">View products and update pricing configurations</p>
         </div>
-
-        <!-- Category Menu -->
-        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 shrink-0">
-            @{
-                var isAllActive = string.Equals(activeCategory, "All", StringComparison.OrdinalIgnoreCase);
-            }
-            <a href="@Url.Action("Index", "Product", new { category = "All" })"
-               class="px-5 py-2 rounded-full text-xs font-semibold tracking-wider whitespace-nowrap transition-all duration-200 @(isAllActive ? "bg-amber-700/80 text-amber-100 border border-amber-600/30" : "bg-[#1c1c1e] text-neutral-400 hover:text-white hover:bg-[#252529]")">
-                All
-            </a>
-
-            @foreach (var cat in dbCategories)
-            {
-                var isActive = string.Equals(activeCategory, cat.Name, StringComparison.OrdinalIgnoreCase);
-                <a href="@Url.Action("Index", "Product", new { category = cat.Name })"
-                   class="px-5 py-2 rounded-full text-xs font-semibold tracking-wider whitespace-nowrap transition-all duration-200 @(isActive ? "bg-amber-700/80 text-amber-100 border border-amber-600/30" : "bg-[#1c1c1e] text-neutral-400 hover:text-white hover:bg-[#252529]")">
-                    @cat.Name
-                </a>
-            }
-        </div>
-
-        <!-- Products Grid Layout -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 pt-2">
-            @foreach (var product in Model)
-            {
-                <button type="button"
-                        onclick="openProductDetail('@product.ProductId')"
-                        class="h-[130px] w-full bg-[#1c1c1e] hover:bg-[#242427] active:scale-[0.98] text-left rounded-2xl p-4 flex flex-col justify-between shadow-lg border border-neutral-800/80 hover:border-amber-500/40 cursor-pointer transition-all duration-150 group overflow-hidden focus:outline-none focus:border-amber-500/40">
-
-                    <!-- Top Container -->
-                    <div class="w-full flex items-start justify-between gap-2">
-                        <span class="w-8 h-1 rounded-full bg-amber-500 group-hover:w-12 transition-all duration-300"></span>
-                        <span class="text-[10px] font-mono tracking-wider text-neutral-500 uppercase group-hover:text-neutral-400">
-                            @product.ProductCode
-                        </span>
-                    </div>
-
-                    <!-- Middle Container -->
-                    <div class="w-full flex-1 flex items-center pt-2 pb-1">
-                        <h3 class="text-sm font-medium text-neutral-200 line-clamp-3 group-hover:text-white transition-colors duration-150 leading-snug">
-                            @product.ProductName
-                        </h3>
-                    </div>
-                </button>
-            }
-        </div>
-    </div>
-
-    <!-- PERSISTENT RIGHT SIDE BAR -->
-    <aside class="hidden lg:flex w-96 bg-[#1c1c1e] border-l border-neutral-800/60 flex-col h-full overflow-hidden">
-        <div class="p-4 border-b border-neutral-800 flex justify-between items-center">
-            <span class="text-sm font-bold tracking-wider text-neutral-300 uppercase">Current Order</span>
-            <span class="bg-neutral-800 text-amber-500 font-bold px-2.5 py-0.5 rounded text-xs">@cartCount Items</span>
-        </div>
-        <div class="flex-1 overflow-y-auto p-4 space-y-4">
-            <vc:cart-items-list></vc:cart-items-list>
-        </div>
-        <div class="p-4 border-t border-neutral-800 bg-[#171719]">
-            @await Html.PartialAsync("_CartFooterActions")
-        </div>
-    </aside>
-
-</div>
-
-<!-- PERSISTENT MOBILE BOTTOM BAR -->
-<div class="fixed bottom-0 inset-x-0 bg-[#121212] border-t border-neutral-800/80 px-4 py-3 z-30 pb-5 lg:hidden">
-    <div id="openCartBtn" class="bg-[#1c1c1e] p-2.5 rounded-full flex items-center justify-between cursor-pointer active:scale-95 transition-all duration-150">
-        <span class="text-xs font-semibold text-neutral-300 pl-3">
-            @cartCount Items | Total: <span class="text-amber-500 font-bold">$@cartTotal</span>
-        </span>
-        <button class="bg-[#664608] hover:bg-amber-700 text-amber-100 font-bold text-xs px-6 py-2.5 rounded-full uppercase tracking-wider transition-all duration-200">
-            Pay
+        <button type="button" id="btnToggleFilters" class="md:hidden px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold rounded-xl border border-neutral-700/40 transition flex items-center gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+            </svg>
+            Filters
         </button>
     </div>
-</div>
 
-<!-- MOBILE DRAWER MODAL BOTTOM SHEET -->
-<div id="cartSheetOverlay" class="fixed inset-0 bg-black/75 z-40 transition-opacity duration-300 opacity-0 pointer-events-none lg:hidden"></div>
-<div id="cartSheet" class="fixed bottom-0 inset-x-0 bg-[#1c1c1e] rounded-t-3xl z-40 transform translate-y-full transition-transform duration-300 flex flex-col max-h-[85vh] lg:hidden">
-    <div class="flex justify-center py-3.5 cursor-pointer" id="closeCartBtn">
-        <div class="w-12 h-1.5 bg-neutral-700 rounded-full"></div>
-    </div>
-    <div class="overflow-y-auto px-5 py-2 space-y-4 flex-1">
-        <vc:cart-items-list></vc:cart-items-list>
-    </div>
-    <div class="p-4 border-t border-neutral-800 bg-[#1c1c1e]">
-        @await Html.PartialAsync("_CartFooterActions")
-    </div>
-</div>
+    <!-- Filters Section -->
+    <form id="filterForm" class="hidden md:flex mt-6 bg-[#1c1c1e] border border-neutral-800/80 rounded-2xl p-4 flex-wrap items-end gap-4 shadow-lg shrink-0">
+        <input type="hidden" id="currentPage" name="page" value="1" />
 
-<!-- MODIFIED PRODUCT DETAIL OVERLAY MODAL -->
-<div id="productDetailModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
-    <div id="modalCard" class="bg-[#1c1c1e] border border-neutral-800 w-full max-w-xl rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-200">
-
-        <!-- Header -->
-        <div class="p-4 border-b border-neutral-800 flex justify-between items-center bg-[#171719]">
-            <div class="flex items-center space-x-3">
-                <span class="text-sm font-bold tracking-wider text-neutral-300 uppercase">Product Detail</span>
-                <span id="detailCode" class="text-[10px] font-mono tracking-wider text-amber-500 uppercase bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-600/20"></span>
-            </div>
-            <button onclick="closeProductDetailModal()" class="text-neutral-500 hover:text-white transition duration-150 flex items-center p-1 rounded-lg hover:bg-neutral-800">
-                <span class="material-symbols-outlined text-xl">close</span>
-            </button>
+        <div class="flex flex-col gap-1.5 flex-1 min-w-[200px] w-full">
+            <label for="filterProductName" class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Search Product</label>
+            <input type="text" id="filterProductName" name="productName" placeholder="Search code or name..."
+                   class="w-full bg-[#121212] border border-neutral-800 focus:border-neutral-700 text-neutral-200 placeholder-neutral-600 rounded-xl px-3 py-2 text-xs focus:outline-none transition" />
         </div>
 
-        <div class="p-6 text-neutral-200 max-h-[70vh] overflow-y-auto">
-            <!-- Loader State -->
-            <div id="modalLoading" class="flex flex-col items-center justify-center py-12 space-y-3">
-                <div class="w-9 h-9 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-xs text-neutral-500 font-medium tracking-wide">Fetching detail matrices...</p>
-            </div>
+        <div class="flex flex-col gap-1.5 flex-1 min-w-[180px] w-full relative">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Category</label>
+            <input type="hidden" id="filterCategoryId" name="categoryId" value="" />
 
-            <div id="modalData" class="hidden space-y-5">
-                <div>
-                    <h2 id="detailName" class="text-2xl font-bold text-white leading-tight tracking-tight"></h2>
+            <button type="button" id="btnCategoryDropdown" class="w-full bg-[#121212] border border-neutral-800 text-neutral-200 rounded-xl px-3 py-2 text-xs text-left flex items-center justify-between transition focus:outline-none focus:border-neutral-700">
+                <span id="selectedCategoryText" class="truncate text-neutral-400">All Categories</span>
+                <svg class="w-3.5 h-3.5 text-neutral-400 shrink-0 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+
+            <div id="categoryMenu" class="hidden absolute z-50 left-0 right-0 top-full mt-1.5 w-full bg-[#1c1c1e] border border-neutral-700/80 rounded-xl shadow-2xl max-h-48 overflow-y-auto divide-y divide-neutral-800/60">
+                <div data-value="" data-label="All Categories" class="dropdown-item px-3 py-2.5 text-xs text-neutral-400 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                    All Categories
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-neutral-800/60 pt-4">
-                    <!-- Left Side: Custom UI for Unit Selection Blocks -->
-                    <div class="space-y-2.5">
-                        <div id="unitOptionsContainer" class="space-y-2 max-h-[220px] overflow-y-auto pr-1 no-scrollbar">
-                            <!-- Injected dynamically as selection nodes -->
-                        </div>
-                        <select id="detailUnitSelect" class="hidden"></select>
+                @foreach (var cat in categories)
+                {
+                    <div data-value="@cat.Id" data-label="@cat.Id" class="dropdown-item px-3 py-2.5 text-xs text-neutral-200 hover:bg-neutral-800 hover:text-amber-400 cursor-pointer transition-colors truncate">
+                        @cat.Name
                     </div>
-
-                    <!-- Right Side: Metrics, Editable Price, and Quantity Stepper -->
-                    <div class="bg-[#171719] border border-neutral-800/80 rounded-xl p-4 flex flex-col justify-between space-y-4">
-                        <div>
-                            <p class="text-xs text-neutral-400 font-bold uppercase tracking-wider mb-1">Description</p>
-                            <p id="detailDescription" class="text-xs text-neutral-400 leading-relaxed line-clamp-3"></p>
-                        </div>
-
-                        <!-- Editable Price Input Matrix -->
-                        <div class="border-t border-neutral-800/80 pt-3">
-                            <label class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-1.5">Unit Price (MMK)</label>
-                            <div class="relative">
-                                <input type="number" id="detailPriceInput" step="0.01"
-                                       class="w-full bg-[#1c1c1e] text-amber-500 text-xl font-black rounded-lg pl-3 pr-14 py-2 border border-neutral-700 focus:outline-none focus:border-amber-500 transition-colors" />
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-600 select-none">MMK</span>
-                            </div>
-                        </div>
-
-                        <!-- Quantity Interface Stepper -->
-                        <div class="border-t border-neutral-800/80 pt-3">
-                            <label class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-1.5">Quantity</label>
-                            <div class="flex items-center gap-2">
-                                <button type="button" onclick="updateModalQty(-1)" class="w-10 h-10 rounded-lg bg-neutral-800 text-neutral-300 flex items-center justify-center hover:bg-neutral-700 hover:text-white transition-colors active:scale-95">
-                                    <span class="material-symbols-outlined text-sm">remove</span>
-                                </button>
-                                <input type="number" id="detailQtyInput" value="1" min="1"
-                                       class="w-full bg-[#1c1c1e] text-center text-lg font-bold text-white rounded-lg py-1.5 border border-neutral-700 focus:outline-none focus:border-amber-500 transition-colors" />
-                                <button type="button" onclick="updateModalQty(1)" class="w-10 h-10 rounded-lg bg-neutral-800 text-neutral-300 flex items-center justify-center hover:bg-neutral-700 hover:text-white transition-colors active:scale-95">
-                                    <span class="material-symbols-outlined text-sm">add</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                }
             </div>
         </div>
 
-        <!-- Action Footer -->
-        <div class="p-4 border-t border-neutral-800 bg-[#171719] flex justify-end items-center gap-2">
-            <button onclick="closeProductDetailModal()" class="px-5 py-2.5 rounded-xl text-xs font-bold text-neutral-400 hover:text-white hover:bg-[#252529] transition duration-150">
-                Cancel
+        <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+            <button type="submit" class="flex-1 md:flex-none px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold rounded-xl text-xs transition shadow-sm text-center">
+                Filter
             </button>
-            <button id="modalActionBtn" class="bg-amber-700/80 hover:bg-amber-600 active:bg-amber-800 text-amber-500 font-bold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all duration-150 shadow-md border border-amber-500/20 flex items-center space-x-2">
-                <span class="material-symbols-outlined text-sm">shopping_cart</span>
-                <span>Add to Order</span>
+            <button type="button" id="btnClear" class="flex-1 md:flex-none px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-medium rounded-xl text-xs transition border border-neutral-700/30 text-center">
+                Clear
             </button>
+        </div>
+    </form>
+
+    <!-- Table Container -->
+    <div class="flex-1 min-h-0 mt-6 bg-[#1c1c1e] border border-neutral-800/80 rounded-2xl overflow-hidden flex flex-col shadow-xl">
+        <div class="overflow-y-auto flex-1 p-0">
+
+            <!-- DESKTOP TABLE VIEW -->
+            <div class="hidden md:block">
+                <table class="w-full text-left border-collapse min-w-[700px]">
+                    <thead>
+                        <tr class="bg-[#171719] border-b border-neutral-800 text-[11px] font-bold tracking-wider text-neutral-400 uppercase sticky top-0 z-10">
+                            <th class="py-4 px-6">Code</th>
+                            <th class="py-4 px-6">Name</th>
+                            <th class="py-4 px-6">Category</th>
+                            <th class="py-4 px-6 text-center">Default Unit</th>
+                            <th class="py-4 px-6 text-right">Price</th>
+                            <th class="py-4 px-6 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody" class="divide-y divide-neutral-800/50 text-xs text-neutral-300">
+                        <!-- Items rendered dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- MOBILE CARD VIEW -->
+            <div id="productCardContainer" class="block md:hidden divide-y divide-neutral-800/60">
+                <!-- Items rendered dynamically -->
+            </div>
+
+        </div>
+
+        <!-- Pagination -->
+        <div class="p-4 border-t border-neutral-800 bg-[#171719] flex flex-col sm:flex-row gap-3 items-center justify-between shrink-0 text-xs text-neutral-400">
+            <div id="paginationInfo" class="text-center sm:text-left"></div>
+            <div class="flex items-center gap-1" id="paginationControls"></div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // --- MOBILE DRAWER EVENT PIPELINE ---
-        const openCartBtn = document.getElementById('openCartBtn');
-        const closeCartBtn = document.getElementById('closeCartBtn');
-        const cartSheet = document.getElementById('cartSheet');
-        const cartSheetOverlay = document.getElementById('cartSheetOverlay');
+<!-- PRODUCT DETAIL / PRICE EDIT MODAL -->
+<div id="detailsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md transition-opacity duration-200">
+    <div class="bg-[#161618] border-0 sm:border sm:border-neutral-800/80 w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl flex flex-col shadow-2xl overflow-hidden">
 
-        function toggleCartSheet(isOpen) {
-            if (!cartSheet) return;
-            if (isOpen) {
-                cartSheet.classList.remove('translate-y-full');
-                cartSheetOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        <!-- Modal Header -->
+        <div class="px-5 sm:px-6 py-4 border-b border-neutral-800/80 flex items-center justify-between bg-[#111113] shrink-0">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400">Product Units & Pricing</h3>
+                    <p id="modalProductName" class="font-mono font-bold text-neutral-100 text-sm leading-tight mt-0.5 truncate"></p>
+                </div>
+            </div>
+            <button type="button" id="btnCloseModal" class="text-neutral-400 hover:text-neutral-100 p-2 rounded-xl hover:bg-neutral-800/80 transition shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div id="modalBody" class="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5 text-xs text-neutral-300">
+            <!-- Dynamic Content -->
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-5 sm:px-6 py-3.5 border-t border-neutral-800/80 bg-[#111113] flex items-center justify-between shrink-0 gap-3">
+            <span id="saveStatusMsg" class="text-[11px] text-neutral-500 hidden sm:inline">Modify unit prices and save changes</span>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <button type="button" id="btnCloseModalFooter" class="flex-1 sm:flex-none px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-semibold rounded-xl text-xs transition border border-neutral-700/50 text-center">
+                    Cancel
+                </button>
+                <button type="button" id="btnSavePrices" class="flex-1 sm:flex-none px-5 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-xl text-xs transition shadow-sm text-center">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tableBody = document.getElementById("productTableBody");
+        const cardContainer = document.getElementById("productCardContainer");
+        const paginationInfo = document.getElementById("paginationInfo");
+        const paginationControls = document.getElementById("paginationControls");
+        const filterForm = document.getElementById("filterForm");
+        const currentPageInput = document.getElementById("currentPage");
+        const btnToggleFilters = document.getElementById("btnToggleFilters");
+
+        const detailsModal = document.getElementById("detailsModal");
+        const modalProductName = document.getElementById("modalProductName");
+        const modalBody = document.getElementById("modalBody");
+        const btnCloseModal = document.getElementById("btnCloseModal");
+        const btnCloseModalFooter = document.getElementById("btnCloseModalFooter");
+        const btnSavePrices = document.getElementById("btnSavePrices");
+        const saveStatusMsg = document.getElementById("saveStatusMsg");
+
+        const btnCategoryDropdown = document.getElementById("btnCategoryDropdown");
+        const categoryMenu = document.getElementById("categoryMenu");
+        const filterCategoryId = document.getElementById("filterCategoryId");
+        const selectedCategoryText = document.getElementById("selectedCategoryText");
+
+        let currentProductId = "";
+
+        function setupCustomDropdown(btn, menu, hiddenInput, labelSpan) {
+            btn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                menu.classList.toggle("hidden");
+            });
+
+            menu.addEventListener("click", function (e) {
+                const item = e.target.closest('.dropdown-item');
+                if (!item) return;
+
+                const val = item.getAttribute("data-value");
+                const label = item.getAttribute("data-label");
+
+                hiddenInput.value = val;
+                labelSpan.textContent = label;
+
+                if (val === "") {
+                    labelSpan.classList.add("text-neutral-400");
+                    labelSpan.classList.remove("text-neutral-200");
+                } else {
+                    labelSpan.classList.remove("text-neutral-400");
+                    labelSpan.classList.add("text-neutral-200");
+                }
+
+                menu.classList.add("hidden");
+            });
+        }
+
+        setupCustomDropdown(btnCategoryDropdown, categoryMenu, filterCategoryId, selectedCategoryText);
+
+        document.addEventListener("click", function () {
+            if (categoryMenu) categoryMenu.classList.add("hidden");
+        });
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function closeModal() {
+            detailsModal.classList.add("hidden");
+        }
+
+        btnCloseModal.addEventListener("click", closeModal);
+        btnCloseModalFooter.addEventListener("click", closeModal);
+        detailsModal.addEventListener("click", function (e) {
+            if (e.target === detailsModal) closeModal();
+        });
+
+        function fetchProductDetails(id) {
+            currentProductId = id;
+            modalProductName.textContent = '';
+            modalBody.innerHTML = `
+                <div class="py-12 text-center text-neutral-400 text-xs">
+                    <svg class="animate-spin h-5 w-5 mx-auto mb-2 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading unit details...
+                </div>`;
+            detailsModal.classList.remove("hidden");
+
+            fetch(`@Url.Action("GetProductDetail", "Products")?id=${encodeURIComponent(id)}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to load detail');
+                    return res.json();
+                })
+                .then(data => {
+                    renderModalContent(data);
+                })
+                .catch(err => {
+                    console.error("Detail Fetch Error:", err);
+                    modalBody.innerHTML = `<div class="py-12 text-center text-rose-400 text-xs font-medium">Unable to load details.</div>`;
+                });
+        }
+
+        // Renders ProductDetailViewModel data
+        function renderModalContent(data) {
+            modalProductName.textContent = data.name ? `${data.name} (${data.code})` : 'N/A';
+
+            let unitRows = '';
+            if (data.details && data.details.length > 0) {
+                data.details.forEach(unit => {
+                    unitRows += `
+                        <tr class="border-b border-neutral-800/40 hover:bg-neutral-800/30 transition-colors text-xs">
+                            <td class="py-3 px-3 text-neutral-200 font-medium">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-neutral-800 text-amber-400 font-semibold border border-neutral-700/60">
+                                    ${escapeHtml(unit.name)}
+                                </span>
+                            </td>
+                            <td class="py-2 px-3 text-right">
+                                <div class="relative flex items-center justify-end">
+                                    <input type="number"
+                                           step="100"
+                                           data-detail-id="${unit.id}"
+                                           value="${unit.price}"
+                                           class="unit-price-input w-36 bg-[#121212] border border-neutral-700/80 focus:border-amber-500 text-amber-400 font-mono font-bold text-right rounded-lg px-2.5 py-1.5 text-xs focus:outline-none transition" />
+                                </div>
+                            </td>
+                        </tr>`;
+                });
             } else {
-                cartSheet.classList.add('translate-y-full');
-                cartSheetOverlay.classList.add('opacity-0', 'pointer-events-none');
+                unitRows = `<tr><td colspan="2" class="py-8 text-center text-neutral-500 text-xs">No units available.</td></tr>`;
             }
+
+            modalBody.innerHTML = `
+                <div class="grid grid-cols-3 gap-3 p-3.5 bg-[#0e0e10] rounded-xl border border-neutral-800/80">
+                    <div class="min-w-0">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-neutral-500 block">Category</span>
+                        <span class="text-neutral-200 font-semibold text-xs truncate block mt-0.5">${escapeHtml(data.category || 'Uncategorized')}</span>
+                    </div>
+                    <div class="min-w-0">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-neutral-500 block">Code</span>
+                        <span class="text-neutral-300 font-mono text-xs truncate block mt-0.5">${escapeHtml(data.code || 'N/A')}</span>
+                    </div>
+                    <div class="min-w-0">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-neutral-500 block">Short Code</span>
+                        <span class="text-neutral-400 font-mono text-xs truncate block mt-0.5">${escapeHtml(data.shortCode || '-')}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Unit Pricing Configuration</h4>
+                        <span class="text-[11px] font-mono text-neutral-500">${data.details ? data.details.length : 0} unit(s)</span>
+                    </div>
+                    <div class="border border-neutral-800/80 rounded-xl overflow-hidden bg-[#0e0e10]">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-[#121214] border-b border-neutral-800 text-[10px] font-bold tracking-wider text-neutral-400 uppercase">
+                                    <th class="py-2.5 px-3">Unit Name</th>
+                                    <th class="py-2.5 px-3 text-right">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-neutral-800/40">
+                                ${unitRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
         }
 
-        openCartBtn?.addEventListener('click', () => toggleCartSheet(true));
-        closeCartBtn?.addEventListener('click', () => toggleCartSheet(false));
-        cartSheetOverlay?.addEventListener('click', () => toggleCartSheet(false));
+        btnSavePrices.addEventListener("click", function () {
+            const inputs = modalBody.querySelectorAll(".unit-price-input");
+            const unitsPayload = [];
 
-
-        // --- DYNAMIC PRODUCT MODAL PIPELINE ---
-        const modal = document.getElementById('productDetailModal');
-        const modalCard = document.getElementById('modalCard');
-        const modalLoading = document.getElementById('modalLoading');
-        const modalData = document.getElementById('modalData');
-
-        const detailCode = document.getElementById('detailCode');
-        const detailName = document.getElementById('detailName');
-        const detailDescription = document.getElementById('detailDescription');
-        const unitOptionsContainer = document.getElementById('unitOptionsContainer');
-        const detailPriceInput = document.getElementById('detailPriceInput');
-        const detailQtyInput = document.getElementById('detailQtyInput');
-        const modalActionBtn = document.getElementById('modalActionBtn');
-
-        let currentProductUnits = [];
-        let activeUnitIndex = 0;
-        let selectedProductId = null;
-
-        // Quantity helper modifier adjustment loops
-        function updateModalQty(change) {
-            let currentQty = parseInt(detailQtyInput.value) || 1;
-            let newQty = currentQty + change;
-            if (newQty >= 1) {
-                detailQtyInput.value = newQty;
-            }
-        }
-
-        async function openProductDetail(productId) {
-            if (!modal) return;
-            selectedProductId = productId;
-
-            // Reset modal interaction properties to pure baseline defaults
-            detailQtyInput.value = 1;
-            detailPriceInput.value = "";
-
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            modalCard.classList.remove('scale-95');
-            modalLoading.classList.remove('hidden');
-            modalData.classList.add('hidden');
-            unitOptionsContainer.innerHTML = '';
-
-            try {
-                const response = await fetch(`/Products/GetDetail/${productId}`);
-                if (!response.ok) throw new Error('Data validation connection fault.');
-
-                const product = await response.json();
-
-                detailCode.textContent = product.ProductCode || product.productCode || 'GENERIC';
-                detailName.textContent = product.ProductName || product.productName || 'Unknown Item';
-                detailDescription.textContent = product.Description || product.description || 'No descriptive context provided for this product portfolio.';
-
-                currentProductUnits = product.ProductUnits || product.productUnits || [];
-
-                if (currentProductUnits.length > 0) {
-                    activeUnitIndex = 0;
-
-                    currentProductUnits.forEach((unit, index) => {
-                        const uName = unit.UnitName || unit.unitName;
-                        const uPrice = unit.UnitPrice || unit.unitPrice || 0;
-                        const isReport = unit.IsReportUnit !== undefined ? unit.IsReportUnit : unit.isReportUnit;
-
-                        const btn = document.createElement('button');
-                        btn.type = "button";
-                        btn.className = `w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all duration-150 font-medium text-xs unit-select-node`;
-                        btn.dataset.index = index;
-
-                        btn.innerHTML = `
-                            <span class="text-neutral-200 tracking-wide font-semibold text-[13px]">${uName}</span>
-                            <span class="text-neutral-400 font-mono font-medium">${parseFloat(uPrice).toLocaleString()} MMK</span>
-                        `;
-
-                        if (isReport) {
-                            activeUnitIndex = index;
-                        }
-
-                        btn.addEventListener('click', () => selectUnitOption(index));
-                        unitOptionsContainer.appendChild(btn);
-                    });
-
-                    selectUnitOption(activeUnitIndex);
-                } else {
-                    detailPriceInput.value = 0;
-                    unitOptionsContainer.innerHTML = `<div class="text-xs text-neutral-500 py-4 text-center">No retail options configured.</div>`;
-                }
-
-                modalLoading.classList.add('hidden');
-                modalData.classList.remove('hidden');
-            } catch (error) {
-                console.error("API Fetch execution failure:", error);
-                detailName.textContent = "Detail Error";
-                detailDescription.textContent = "Unable to fetch exact detail metrics. Please check network connectivity parameters.";
-                modalLoading.classList.add('hidden');
-                modalData.classList.remove('hidden');
-            }
-        }
-
-        function selectUnitOption(index) {
-            activeUnitIndex = index;
-            const targetUnit = currentProductUnits[index];
-            if (!targetUnit) return;
-
-            const uPrice = targetUnit.UnitPrice || targetUnit.unitPrice || 0;
-
-            // Explicit mutable target population bound directly to input elements
-            detailPriceInput.value = uPrice;
-
-            const buttons = unitOptionsContainer.querySelectorAll('.unit-select-node');
-            buttons.forEach((btn, idx) => {
-                if (idx === parseInt(index)) {
-                    btn.classList.remove('border-neutral-800/80', 'bg-[#171719]/40');
-                    btn.classList.add('border-amber-600/60', 'bg-amber-900/10', 'ring-1', 'ring-amber-500/20');
-                } else {
-                    btn.classList.remove('border-amber-600/60', 'bg-amber-900/10', 'ring-1', 'ring-amber-500/20');
-                    btn.classList.add('border-neutral-800/80', 'bg-[#171719]/40');
-                }
-            });
-        }
-
-        function updateCartUI(htmlResult) {
-            const desktopCartContainer = document.querySelector('aside .flex-1.overflow-y-auto');
-            if (desktopCartContainer) desktopCartContainer.innerHTML = htmlResult;
-
-            const mobileCartContainer = document.querySelector('#cartSheet .overflow-y-auto');
-            if (mobileCartContainer) mobileCartContainer.innerHTML = htmlResult;
-
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlResult, 'text/html');
-
-            const itemsCount = doc.querySelectorAll('.dynamic-cart-row').length;
-
-            const totalSpan = doc.querySelector('.text-xl.font-black.text-amber-500');
-            const displayTotal = totalSpan ? totalSpan.textContent.trim() : "0 MMK";
-
-            const desktopBadge = document.querySelector('aside span.bg-neutral-800');
-            if (desktopBadge) desktopBadge.textContent = `${itemsCount} Items`;
-
-            const mobileBarText = document.querySelector('#openCartBtn span.text-xs');
-            if (mobileBarText) {
-                mobileBarText.innerHTML = `${itemsCount} Items | Total: <span class="text-amber-500 font-bold">${displayTotal}</span>`;
-            }
-        }
-
-        modalActionBtn?.addEventListener('click', async () => {
-            const chosenUnit = currentProductUnits[activeUnitIndex];
-            if (!chosenUnit) return;
-
-            const finalPrice = parseFloat(detailPriceInput.value) || 0;
-            const finalQuantity = parseInt(detailQtyInput.value) || 1;
-
-            const payloadData = {
-                productId: selectedProductId,
-                unitId: chosenUnit.UnitId || chosenUnit.unitId,
-                unitName: chosenUnit.UnitName || chosenUnit.unitName,
-                unitPrice: finalPrice,
-                quantity: finalQuantity
-            };
-
-            try {
-                const response = await fetch('/Carts/AddToCart', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payloadData)
+            inputs.forEach(input => {
+                unitsPayload.push({
+                    unitId: input.getAttribute("data-detail-id"),
+                    price: parseFloat(input.value) || 0
                 });
+            });
 
-                if (!response.ok) throw new Error('Network error processing cart.');
+            btnSavePrices.disabled = true;
+            btnSavePrices.textContent = "Saving...";
 
-                const htmlResult = await response.text();
-                updateCartUI(htmlResult);
-                closeProductDetailModal();
-            } catch (error) {
-                console.error("Failed to update cart component layout matrices:", error);
+            fetch(`@Url.Action("UpdateUnitPrices", "Products")`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    productId: currentProductId,
+                    units: unitsPayload // Matches 'Units' in C#
+                })
+            })
+            .then(res => res.json())
+            .then(res => {
+                btnSavePrices.disabled = false;
+                btnSavePrices.textContent = "Save Changes";
+
+                if (res.success) {
+                    saveStatusMsg.textContent = res.message || "Saved successfully!";
+                    saveStatusMsg.classList.remove("text-neutral-500", "text-rose-400", "hidden");
+                    saveStatusMsg.classList.add("text-emerald-400");
+                    setTimeout(() => closeModal(), 800);
+                    fetchProducts();
+                } else {
+                    alert(res.message || "Failed to save prices.");
+                }
+            })
+            .catch(err => {
+                console.error("Save error:", err);
+                btnSavePrices.disabled = false;
+                btnSavePrices.textContent = "Save Changes";
+                alert("An error occurred while saving.");
+            });
+        });
+
+        btnToggleFilters.addEventListener("click", function() {
+            filterForm.classList.toggle("hidden");
+            filterForm.classList.toggle("flex");
+        });
+
+        function fetchProducts() {
+            const formData = new FormData(filterForm);
+            const params = new URLSearchParams(formData);
+
+            tableBody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-neutral-500 font-medium text-xs">Loading products...</td></tr>`;
+            cardContainer.innerHTML = `<div class="py-12 text-center text-neutral-500 font-medium text-xs">Loading products...</div>`;
+
+            fetch(`@Url.Action("GetProductsData", "Products")?${params.toString()}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network payload failure');
+                    return res.json();
+                })
+                .then(data => {
+                    renderLayouts(data.items);
+                    renderPagination(data);
+                })
+                .catch(err => {
+                    console.error("Fetch Error:", err);
+                    tableBody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-rose-500 font-medium text-xs">Failed to retrieve data.</td></tr>`;
+                    cardContainer.innerHTML = `<div class="py-12 text-center text-rose-500 font-medium text-xs">Failed to retrieve data.</div>`;
+                });
+        }
+
+        // Renders list using ProductViewModel
+        function renderLayouts(items) {
+            if (!items || items.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-neutral-500 font-medium text-xs">No products found.</td></tr>`;
+                cardContainer.innerHTML = `<div class="py-12 text-center text-neutral-500 font-medium text-xs">No products found.</div>`;
+                return;
+            }
+
+            let tableHtml = '';
+            let cardHtml = '';
+
+            items.forEach(product => {
+                const safeCode = escapeHtml(product.code);
+                const safeName = escapeHtml(product.name);
+                const safeCategory = escapeHtml(product.category);
+                const safeDefaultUnit = escapeHtml(product.defaultUnit);
+                const formattedPrice = new Intl.NumberFormat().format(product.price || 0);
+
+                tableHtml += `
+                    <tr class="hover:bg-neutral-800/30 transition-colors">
+                        <td class="py-4 px-6 font-mono font-semibold text-amber-500">${safeCode}</td>
+                        <td class="py-4 px-6 text-neutral-200 font-medium">${safeName}</td>
+                        <td class="py-4 px-6 text-neutral-400">${safeCategory}</td>
+                        <td class="py-4 px-6 text-center">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-neutral-800 text-amber-400 border border-neutral-700/60">
+                                ${safeDefaultUnit}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-right font-semibold text-neutral-200 font-mono">${formattedPrice}</td>
+                        <td class="py-4 px-6 text-center">
+                            <button type="button" data-id="${product.id}" class="btn-view-details inline-flex items-center px-3 py-1 bg-neutral-800 hover:bg-neutral-700 hover:text-neutral-100 text-neutral-300 font-medium rounded-lg transition border border-neutral-700/40 text-[11px]">
+                                Edit Prices
+                            </button>
+                        </td>
+                    </tr>`;
+
+                cardHtml += `
+                    <div class="p-4 flex flex-col gap-3 hover:bg-neutral-800/20 transition-colors">
+                        <div class="flex items-center justify-between">
+                            <span class="font-mono font-bold text-amber-500 text-sm">${safeCode}</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-neutral-800 text-amber-400 border border-neutral-700/60">
+                                ${safeDefaultUnit}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-neutral-100 font-semibold text-sm">${safeName}</p>
+                            <p class="text-neutral-500 text-[11px] mt-0.5">${safeCategory}</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-neutral-800/40">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold tracking-wider text-neutral-500 block">Default Price</span>
+                                <span class="text-neutral-200 font-mono font-bold text-xs">${formattedPrice}</span>
+                            </div>
+                            <button type="button" data-id="${product.id}" class="btn-view-details px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-semibold rounded-lg transition border border-neutral-700/50 text-[11px]">
+                                Edit Prices
+                            </button>
+                        </div>
+                    </div>`;
+            });
+
+            tableBody.innerHTML = tableHtml;
+            cardContainer.innerHTML = cardHtml;
+        }
+
+        document.addEventListener("click", function (e) {
+            const btn = e.target.closest(".btn-view-details");
+            if (btn) {
+                const id = btn.getAttribute("data-id");
+                if (id) fetchProductDetails(id);
             }
         });
 
-        // 1. DYNAMIC MODIFIER: EDIT PRICE MODAL VIA GLOBAL CONTROLLER
-        function promptEditPrice(productId, unitId, currentPrice) {
-            if (!window.GlobalDialog) return;
+        function renderPagination(data) {
+            paginationInfo.innerHTML = `Showing Page <span class="font-medium text-neutral-200">${data.currentPage}</span> of <span class="font-medium text-neutral-200">${data.totalPages}</span> <span class="text-neutral-500 sm:ml-1 block sm:inline">(${data.totalCount} entries total)</span>`;
 
-            window.GlobalDialog.open({
-                title: "Update Sale Price",
-                message: "Enter a new sale price for this item. The updated price will apply to this order only.",
-                showInput: true,
-                defaultValue: currentPrice,
-                onConfirm: async (inputValue) => {
-                    const numericPrice = parseFloat(inputValue.replace(/,/g, ''));
-                    if (isNaN(numericPrice) || numericPrice < 0) {
-                        alert("Please enter a valid sale price.");
-                        return;
-                    }
-
-                    try {
-                        const response = await fetch('/Carts/UpdateCartItem', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ productId, unitId, unitPrice: numericPrice })
-                        });
-                        if (!response.ok) throw new Error('Faulty communication link loop.');
-
-                        const html = await response.text();
-                        updateCartUI(html);
-                        window.GlobalDialog.close();
-                    } catch (err) {
-                        console.error("Failed custom pricing operation execution:", err);
-                    }
-                }
-            });
-        }
-
-        // 2. DYNAMIC MODIFIER: DELETE ITEM MODAL VIA GLOBAL CONTROLLER
-        function deleteCartItem(productId, unitId) {
-            if (!window.GlobalDialog) return;
-
-            window.GlobalDialog.open({
-                title: "Remove Item",
-                message: "Are you sure you want to remove this item from the current order?",
-                showInput: false,
-                onConfirm: async () => {
-                    try {
-                        const response = await fetch('/Carts/RemoveFromCart', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ productId, unitId })
-                        });
-
-                        if (!response.ok) {
-                            throw new Error("Failed to remove the item.");
-                        }
-
-                        const html = await response.text();
-                        updateCartUI(html);
-                        window.GlobalDialog.close();
-                    } catch (err) {
-                        console.error("Error removing item:", err);
-                        alert("Unable to remove the item. Please try again.");
-                    }
-                }
-            });
-        }
-
-        async function adjustQty(productId, unitId, unitPrice, targetQty) {
-            if (targetQty < 0) return;
-
-            try {
-                const response = await fetch('/Carts/UpdateCartItem', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        productId: productId,
-                        unitId: unitId,
-                        unitPrice: parseFloat(unitPrice),
-                        quantity: parseInt(targetQty)
-                    })
-                });
-
-                if (!response.ok) throw new Error('Faulty connection link while updating quantity.');
-
-                const htmlResult = await response.text();
-                updateCartUI(htmlResult);
-
-            } catch (err) {
-                console.error("Failed quantity adjustment operation execution:", err);
+            let controlsHtml = '';
+            if (data.hasPreviousPage) {
+                controlsHtml += `<button type="button" data-page="${data.currentPage - 1}" class="btn-page px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-medium transition border border-neutral-700/30">Prev</button>`;
+            } else {
+                controlsHtml += `<span class="px-3 py-1.5 rounded-xl bg-neutral-800/40 text-neutral-600 border border-neutral-800/80 cursor-not-allowed select-none">Prev</span>`;
             }
+
+            if (data.hasNextPage) {
+                controlsHtml += `<button type="button" data-page="${data.currentPage + 1}" class="btn-page px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-medium transition border border-neutral-700/30">Next</button>`;
+            } else {
+                controlsHtml += `<span class="px-3 py-1.5 rounded-xl bg-neutral-800/40 text-neutral-600 border border-neutral-800/80 cursor-not-allowed select-none">Next</span>`;
+            }
+            paginationControls.innerHTML = controlsHtml;
         }
 
-        window.adjustQty = adjustQty;
-
-        function closeProductDetailModal() {
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            const card = document.getElementById('modalCard');
-            if (card) card.classList.add('scale-95');
-        }
-
-        modal?.addEventListener('click', (e) => {
-            if (e.target === modal) closeProductDetailModal();
+        filterForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            currentPageInput.value = 1;
+            if (window.innerWidth < 768) filterForm.classList.add("hidden");
+            fetchProducts();
         });
-    </script>
-}
+
+        paginationControls.addEventListener("click", function (e) {
+            if (e.target.classList.contains("btn-page")) {
+                currentPageInput.value = e.target.getAttribute("data-page");
+                fetchProducts();
+            }
+        });
+
+        document.getElementById("btnClear").addEventListener("click", function () {
+            filterForm.reset();
+            filterCategoryId.value = "";
+            selectedCategoryText.textContent = "All Categories";
+            selectedCategoryText.classList.add("text-neutral-400");
+            selectedCategoryText.classList.remove("text-neutral-200");
+            currentPageInput.value = 1;
+            fetchProducts();
+        });
+
+        fetchProducts();
+    });
+</script>
