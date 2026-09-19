@@ -243,6 +243,11 @@
                     return res.json();
                 })
                 .then(data => {
+                    if (!data || data.success === false) {
+                        modalProductName.textContent = '';
+                        modalBody.innerHTML = `<div class="py-12 text-center text-rose-400 text-xs font-medium">${escapeHtml(data && data.message ? data.message : 'Product not found.')}</div>`;
+                        return;
+                    }
                     renderModalContent(data);
                 })
                 .catch(err => {

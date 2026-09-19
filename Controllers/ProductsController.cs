@@ -42,7 +42,11 @@ namespace POSMobileApp.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProductDetail(string id)
         {
-            var product = await _productService.GetProductDetailByIdAsync(id);
+            var product = await _productService.GetProductDetailByIdAsync("123123123123");
+
+            if (product == null)
+                return Json(new { success = false, message = "Product not found." });
+
             return Json(product);
         }
 
